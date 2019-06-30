@@ -44,11 +44,11 @@ class Tello:
         self.tello_sn = self.send_command('sn?').returnvalue
 
         # Thread for keep-alive-messages
+        self.KEEPALIVE_INTERVAL = 5.0
         self.send_keepalives = send_keepalives
         self.keepalive_thread = threading.Thread(target=self._keepalive_thread)
         self.keepalive_thread.daemon = True
         self.keepalive_thread.start()
-        self.KEEPALIVE_INTERVAL = 5.0
 
     @property
     def __tello_address__(self):
