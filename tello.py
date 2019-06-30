@@ -96,7 +96,8 @@ class Tello:
 
         # If we try to receive the serial number return the stored value if it exists
         if command == 'sn?' and self.tello_sn != None:
-            return Response('b' + self.tello_sn)
+            print('Serial Number: %s' % self.tello_sn)
+            return Response('b\'' + self.tello_sn)
 
         # Stores the current command and an id in the log
         self.log.append(LogEntry(command, len(self.log)))
