@@ -37,7 +37,10 @@ class Tello:
         self.MAX_TIME_OUT = 10.0
 
         # Initialize drone
-        self.send_command('command')
+        if not self.send_command('command').returnvalue == 'b':
+            print('Initialization failed. Check if you can reach the drone at %s' %
+                  self.tello_ip)
+            return
         self.tello_sn = self.send_command('sn?').returnvalue
 
         # Thread for keep-alive-messages
