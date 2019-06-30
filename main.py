@@ -47,19 +47,20 @@ else:
     while True:
         try:
             command = input()
-            if not command:
-                break
-
-            if 'end' in command:
-                tello.send_command('land')
-                break
-
-            # Send command to tello drone
-            if tello.send_command(command) == None:
-                break
 
         except KeyboardInterrupt:
             tello.send_command('land')
+            break
+
+        if not command:
+            break
+
+        if 'end' in command or tello.send_command(command) == None:
+            tello.send_command('land')
+            break
+
+        # Send command to tello drone. If return is None end communication
+        if tello.send_command(command) == None:
             break
 
 tello.close_connection()
