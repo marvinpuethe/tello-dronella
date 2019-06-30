@@ -13,7 +13,7 @@ class Response:
         return self.returncode
 
     def success(self):
-        return not self.returnvalue.beginswith('error')
+        return not self.returnvalue.startswith('error')
 
     @property
     def __returnvalue__(self):
