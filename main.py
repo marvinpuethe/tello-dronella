@@ -70,7 +70,6 @@ if not os.path.isdir(path_to_log):
 out = open('log' + os.path.sep + start_time + '.txt', 'w')
 
 log = tello.log
-for stat in log:
-    print(stat)
-    str = stat.return_stats()
-    out.write(str)
+for entry in log:
+    print(entry)
+    out.write(str(entry))
