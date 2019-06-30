@@ -7,7 +7,7 @@ from response import Response
 
 
 class Tello:
-    def __init__(self, tello_ip='192.168.10.1'):
+    def __init__(self, tello_ip='192.168.10.1', send_keepalives=True):
 
         # Server information
         self.local_ip = ''
@@ -41,6 +41,7 @@ class Tello:
         self.tello_sn = self.send_command('sn?').returnvalue
 
         # Thread for keep-alive-messages
+        self.send_keepalives = send_keepalives
         self.keepalive_thread = threading.Thread(target=self._keepalive_thread)
         self.keepalive_thread.daemon = True
         self.keepalive_thread.start()
@@ -122,7 +123,7 @@ class Tello:
         return self.log[-1].response
 
     def close_connection(self):
-        self.keepalive_thread._stop()
+        self.send_keepalives = False
         self.keepalive_thread.join(self.MAX_TIME_OUT)
 
     def enable_missionpads(self):
@@ -138,9 +139,7 @@ class Tello:
         Send dummy command to the drone to keep the connection alive.
         Runs as a thread
         '''
-        while True:
-            if (self.keepalive_thread._is_stopped):
-                break
+        while self.send_keepalives:
             command = 'sn?'
             self.socket.sendto(command.encode(
                 'utf-8'), self.tello_address)
