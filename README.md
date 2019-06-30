@@ -55,7 +55,7 @@ When the command has been sent to the drone the script will wait until it was ex
 
 The drone is constantly being monitored. The state is retrieved via the UDP socket and the response is parsed into the `dronestate`. The entries can be retrieved via `drone.state`. You can access the elements like `drone.state.height`.
 
-## Keep-alive connection
+## Keep-alive connection :satellite:
 
 Tello drones have the safety feature to land if no command has been received during the last 15 seconds. To avoid accidental landing the script sends the `sn?`command to the drone.
 
