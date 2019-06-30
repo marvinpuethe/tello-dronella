@@ -45,6 +45,7 @@ class Tello:
         self.keepalive_thread = threading.Thread(target=self._keepalive_thread)
         self.keepalive_thread.daemon = True
         self.keepalive_thread.start()
+        self.KEEPALIVE_INTERVAL = 5.0
 
     @property
     def __tello_address__(self):
@@ -124,7 +125,8 @@ class Tello:
 
     def close_connection(self):
         self.send_keepalives = False
-        self.keepalive_thread.join(self.MAX_TIME_OUT)
+        print('Waiting for threads to terminate...')
+        self.keepalive_thread.join(self.KEEPALIVE_INTERVAL)
 
     def enable_missionpads(self):
         if self.send_command('mon') != -1:
@@ -143,7 +145,7 @@ class Tello:
             command = 'sn?'
             self.socket.sendto(command.encode(
                 'utf-8'), self.tello_address)
-            time.sleep(self.MAX_TIME_OUT)
+            time.sleep(self.KEEPALIVE_INTERVAL)
 
     def _receive_thread(self):
         '''
