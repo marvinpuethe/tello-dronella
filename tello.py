@@ -37,7 +37,7 @@ class Tello:
         self.MAX_TIME_OUT = 10.0
 
         # Initialize drone
-        if not self.send_command('command').returnvalue == 'b':
+        if not self.send_command('command').success():
             print('Initialization failed. Check if you can reach the drone at %s' %
                   self.tello_ip)
             return

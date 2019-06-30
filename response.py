@@ -12,6 +12,9 @@ class Response:
     def __returncode__(self):
         return self.returncode
 
+    def success(self):
+        return not self.returnvalue.beginswith('error')
+
     @property
     def __returnvalue__(self):
         return self.returnvalue
