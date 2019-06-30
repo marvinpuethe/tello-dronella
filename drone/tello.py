@@ -1,9 +1,9 @@
 import socket
 import threading
 import time
-from logentry import LogEntry
-from dronestate import DroneState
-from response import Response
+from drone.logentry import LogEntry
+from drone.state import State
+from drone.response import Response
 
 
 class Tello:
@@ -28,7 +28,7 @@ class Tello:
         self.receive_thread.start()
 
         # Drone state
-        self.state = DroneState(self.tello_address)
+        self.state = State(self.tello_address)
 
         # Log storage
         self.log = []

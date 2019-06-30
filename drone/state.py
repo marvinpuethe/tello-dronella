@@ -3,7 +3,7 @@ import threading
 import time
 
 
-class DroneState:
+class State:
 
     def __init__(self, tello_address):
 

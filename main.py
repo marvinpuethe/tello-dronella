@@ -1,4 +1,4 @@
-from tello import Tello
+from drone.tello import Tello
 import sys
 from datetime import datetime
 import time
