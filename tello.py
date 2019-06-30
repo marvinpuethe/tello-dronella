@@ -124,7 +124,11 @@ class Tello:
                 print('Trying to land drone\nBe careful!')
                 return None
 
-        print('Sent command: %s to %s ✔' % (command, self.tello_ip))
+        if self.log[-1].response.success:
+            print('Succeeded command %s to %s ✔' % (command, self.tello_ip))
+        else:
+            print('Failed command %s to %s ❌' % (command, self.tello_ip))
+
         return self.log[-1].response
 
     def close_connection(self):
