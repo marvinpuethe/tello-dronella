@@ -32,7 +32,7 @@ land
 ### Interactive mode
 
 If no parameter is given and no `command.txt` is found it will start in interactive mode. The script will listen to your keyboard input.  
-You can type any command found in the (Tello SDK 2.0)[https://dl-cdn.ryzerobotics.com/downloads/Tello/Tello%20SDK%202.0%20User%20Guide.pdf]
+You can type any command found in the [Tello SDK 2.0](https://dl-cdn.ryzerobotics.com/downloads/Tello/Tello%20SDK%202.0%20User%20Guide.pdf)
 
 ## Retrieving the state :wrench:
 
@@ -48,7 +48,7 @@ print(drone.state.height)
 Create a drone with `drone = Tello()`. The standard address of your drone is `'192.168.10.1'` if it is in station mode pass the ip to the `Tello()` constructor.
 This will start a UDP socket to command the drone via port 8889. A UDP socket to retrieve the state of the drone is also established via port 8890.
 
-Now you are able to pass commands to your drone via `drone.send_command(command)`. See the (Tello SDK 2.0)[https://dl-cdn.ryzerobotics.com/downloads/Tello/Tello%20SDK%202.0%20User%20Guide.pdf] for reference.  
+Now you are able to pass commands to your drone via `drone.send_command(command)`. See the [Tello SDK 2.0](https://dl-cdn.ryzerobotics.com/downloads/Tello/Tello%20SDK%202.0%20User%20Guide.pdf) for reference.  
 The commands are being sent to the drone and stored into the log which you can access via `drone.log`. If the command is executed the response from the drone is stored into the `logentry`.
 
 When the command has been sent to the drone the script will wait until it was executed successfully or wait until the maximum timeout (`Tello.MAX_TIME_OUT`) has been reached. If the timeout has been reached the script will try to send the _land_ command to the drone.
