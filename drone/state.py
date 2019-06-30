@@ -5,7 +5,7 @@ import time
 
 class State:
 
-    def __init__(self, tello_address):
+    def __init__(self):
 
         # Missionpad variables
         self.missionpads_enabled = False
@@ -50,8 +50,6 @@ class State:
         self.state_thread = threading.Thread(target=self._state_thread)
         self.state_thread.daemon = True
         self.state_thread.start()
-
-        self.tello_address = tello_address
 
     @property
     def __missionpads_enabled__(self):
