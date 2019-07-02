@@ -28,7 +28,7 @@ class Tello:
         self.receive_thread.start()
 
         # Drone state
-        self.state = State(self.tello_address)
+        self.state = State()
 
         # Log storage
         self.log = []
