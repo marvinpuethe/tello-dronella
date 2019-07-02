@@ -37,11 +37,8 @@ class Tello:
         self.MAX_TIME_OUT = 10.0
 
         # Initialize drone
-        if not self.send_command('command').success():
-            print('Initialization failed. Check if you can reach the drone at %s' %
-                  self.tello_ip)
-            return
-        self.tello_sn = self.send_command('sn?').returnvalue
+        self.MAX_INITIALIZATION_ITERATIONS = 5
+        self.init_drone()
 
         # Thread for keep-alive-messages
         self.KEEPALIVE_INTERVAL = 5.0
@@ -88,6 +85,18 @@ class Tello:
     def __log__(self):
         return self.log
 
+    def init_drone(self):
+        '''
+        Initialize the Tello drone with 'command' and retrieve and store the serial number
+        '''
+        response = Response()
+        counter = 0
+        while (not response.success() and counter < self.MAX_INITIALIZATION_ITERATIONS):
+            response = self.send_command('command')
+            counter += 1
+
+        self.tello_sn = self.send_command('sn?').returnvalue
+
     def send_command(self, command):
         '''
         Send a command to the tello drone. Will be blocked until the last command receives an 'OK'. If the command fails (either b/c time out or error), will try to send a  land command
@@ -132,21 +141,30 @@ class Tello:
         return self.log[-1].response
 
     def close_connection(self):
+        '''
+        Stops the keepalive connection and waits for the termination of the thread 
+        '''
         self.send_keepalives = False
         print('Waiting for threads to terminate...')
         self.keepalive_thread.join(self.KEEPALIVE_INTERVAL)
 
     def enable_missionpads(self):
+        '''
+        Notifies the Tello drone that missionpads are enabled and updates the state
+        '''
         if self.send_command('mon') != -1:
             self.state.missionpads_enabled = True
 
     def disable_missionpads(self):
+        '''
+        Notifies the Tello drone that missionpads are disabled and updates the state
+        '''
         if self.send_command('moff') != -1:
             self.state.missionpads_enabled = False
 
     def _keepalive_thread(self):
         '''
-        Send dummy command to the drone to keep the connection alive.
+        Send dummy command ('sn?') to the drone to keep the connection alive
         Runs as a thread
         '''
         while self.send_keepalives:
@@ -157,13 +175,12 @@ class Tello:
 
     def _receive_thread(self):
         '''
-        Listen to responses from the Tello.
-        Runs as a thread, sets self.response to whatever the Tello last returned.
+        Listen to responses from the Tello drone
+        Runs as a thread, sets self.response to whatever the Tello last returned
         '''
-
         while True:
             try:
-                response, ip = self.socket.recvfrom(1024)
+                response, ip = self.socket.recvfrom(4096)
             except socket.error as exc:
                 print("⚠ Caught exception socket.error : %s" % exc)
 
