@@ -40,8 +40,8 @@ class State:
         self.motor_time = None
 
         self.local_ip = ''
+        self.local_port = 0
 
-        self.local_port = 8890
         self.socket = socket.socket(
             socket.AF_INET, socket.SOCK_DGRAM)  # socket for receiving state
         self.socket.bind((self.local_ip, self.local_port))

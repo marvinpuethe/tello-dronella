@@ -11,7 +11,7 @@ class Tello:
 
         # Server information
         self.local_ip = ''
-        self.local_port = 8889
+        self.local_port = 0
         self.socket = socket.socket(
             socket.AF_INET, socket.SOCK_DGRAM)  # socket for sending cmd
         self.socket.bind((self.local_ip, self.local_port))
