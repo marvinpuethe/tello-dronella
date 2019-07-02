@@ -131,7 +131,7 @@ class Tello:
                 self.socket.sendto('land'.encode(
                     'utf-8'), self.tello_address)
                 print('Trying to land drone\nBe careful!')
-                return None
+                return Response('b\'command not sent')
 
         if self.log[-1].response.success:
             print('Succeeded command %s to %s ✔' % (command, self.tello_ip))
