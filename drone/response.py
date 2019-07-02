@@ -13,6 +13,9 @@ class Response:
         return self.returncode
 
     def success(self):
+        if self.returnvalue == None:
+            return False
+
         return not self.returnvalue.startswith('e')
 
     @property
