@@ -22,6 +22,10 @@ class Operator:
         Add the given drone to the swarm
         '''
         self.swarm.append(tello)
+        if self.swarm.index(tello) != -1:
+            print('✅  Added drone ' + tello.tello_ip)
+        else:
+            print('❌  Failed to add drone ' + tello.tello_ip)
 
     def execute_command(self, command):
         '''
@@ -33,6 +37,8 @@ class Operator:
             # Skip execution if tello is disconnected
             if not tello.state.is_connected:
                 # TODO Try to reconnect the drone
+                print('❌  Tello ' + tello.tello_ip +
+                      ' is disconnected. Command not sent')
                 continue
 
             # Execute command and retry MAX_COMMAND_RETRIES times
@@ -42,6 +48,7 @@ class Operator:
 
             # If the execution fails try to land drone and change state
             if counter == self.MAX_COMMAND_RETRIES:
+                print('❌  Execution failed. Landing ' + tello.tello_sn)
                 tello.send_command('land')
                 tello.state.is_connected = False
 
@@ -52,6 +59,7 @@ class Operator:
         tello = Tello(ip)
         if tello.send_command('ap ' + wifi + ' ' + ap).success():
             self.add_drone(tello)
+        print('✅  Registered drone ' + tello.tello_sn + ' to ' + wifi)
 
     def land_swarm(self):
         '''

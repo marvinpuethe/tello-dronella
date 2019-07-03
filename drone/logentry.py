@@ -31,11 +31,12 @@ class LogEntry:
             return True
 
     def __repr__(self):
-        str = ''
-        str += '\nid: %s\n' % self.id
-        str += 'command: %s\n' % self.command
-        str += 'response: %s\n' % self.response
-        str += 'start time: %s\n' % self.start_time
-        str += 'end_time: %s\n' % self.end_time
-        str += 'duration: %s\n' % self.duration
-        return str
+        string = ''
+        string += 'id: ' + str(self.id)
+        string += '\ncommand: ' + str(self.command)
+        string += '\nresponse: ' + str(self.response)
+        string += '\nstart time: ' + str(self.start_time)
+        string += '\nend_time: ' + str(self.end_time)
+        string += '\nduration: ' + str(self.duration)
+        string += '\n'
+        return string

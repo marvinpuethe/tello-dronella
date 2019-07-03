@@ -48,9 +48,8 @@ class Tello:
         self.keepalive_thread.start()
 
     def __del__(self):
-        print('Waiting for threads to terminate...')
+        print('⏲  Waiting for thread ' + self.tello_sn + ' to terminate...')
         self.keepalive_thread.join(self.KEEPALIVE_INTERVAL)
-
 
     @property
     def __tello_address__(self):
@@ -112,7 +111,7 @@ class Tello:
 
         # If we try to receive the serial number return the stored value if it exists
         if command == 'sn?' and self.tello_sn != None:
-            print('Serial Number: %s' % self.tello_sn)
+            print('✅ Serial Number: ' + self.tello_sn)
             return Response('b\'' + self.tello_sn)
 
         # Stores the current command and an id in the log
@@ -121,8 +120,8 @@ class Tello:
         # Send command as utf-8 to the specified tello address
         self.socket.sendto(command.encode(
             'utf-8'), self.tello_address)
-        print('Sending command: %s to %s' %
-              (command, self.tello_ip))
+        print('📶  Sending command: ' + str(command) +
+              ' to  ' + str(self.tello_ip))
 
         # Start timer and wait for response
         start = time.time()
@@ -132,22 +131,26 @@ class Tello:
 
             # If the maximum timeout is reached try to land the drone
             if diff > self.MAX_TIME_OUT:
-                print('❗ Max timeout exceeded ❗\nCommand %s' % command)
-                return Response('b\'error command not sent')
+                print('❌  Max timeout exceeded for command ' +
+                      command + ' for ' + self.tello_ip)
+                return Response('b\'error timeout')
 
         if self.log[-1].response.success:
-            print('Succeeded command %s to %s ✔' % (command, self.tello_ip))
+            print('✅  Succeeded command ' + command +
+                  ' for ' + self.tello_ip + '\n')
         else:
-            print('Failed command %s to %s ❌' % (command, self.tello_ip))
+            print('❌  Failed command ' + command +
+                  ' for ' + self.tello_ip + '\n')
 
         return self.log[-1].response
 
     def close_connection(self):
         '''
-        Stops the keepalive connection and waits for the termination of the thread 
+        Stops the keepalive connection and waits for the termination of the thread
         '''
         self.send_keepalives = False
         self.state.is_connected = False
+        self.socket.close()
 
     def enable_missionpads(self):
         '''
@@ -183,7 +186,7 @@ class Tello:
             try:
                 response, ip = self.socket.recvfrom(4096)
             except socket.error as exc:
-                print("⚠ Caught exception socket.error : %s" % exc)
+                print('❗  Caught exception socket.error: ' + str(exc))
 
             self.response = Response(response)
 
@@ -191,5 +194,5 @@ class Tello:
             if (self.response.returnvalue == self.tello_sn):
                 continue
 
-            print('from %s: %s' % (ip, self.response))
+            print('Response from ' + ip[0] + ': ' + str(self.response))
             self.log[-1].add_response(self.response)

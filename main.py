@@ -7,7 +7,7 @@ import os
 
 def execute_commands_from_file(command_file_name):
     print('Command file found. Executing script')
-    f = open(command_file_name, "r")
+    f = open(command_file_name, 'r')
     commands = f.readlines()
 
     for command in commands:
@@ -16,7 +16,7 @@ def execute_commands_from_file(command_file_name):
 
             if command.find('delay') != -1:
                 sec = float(command.partition('delay')[2])
-                print('delay %s' % sec)
+                print('✅  Delaying ' + sec)
                 time.sleep(sec)
             else:
                 operator.execute_command(command)
@@ -78,7 +78,7 @@ swarm_file_name = get_swarm_file()
 if (swarm_file_name == None):
     swarm_ips = get_swarm_ips_from_keyboard()
 else:
-    f = open(swarm_file_name, "r")
+    f = open(swarm_file_name, 'r')
     ips = f.readlines()
 
     swarm_ips = []

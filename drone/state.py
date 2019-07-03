@@ -161,7 +161,7 @@ class State:
                 response = self.socket.recvfrom(1024)
 
             except socket.error as exc:
-                print('⚠ Caught exception socket.error : %s' % exc)
+                print('❗ Caught exception socket.error: ' + exc)
 
             statelist = str(response).split(';')
 
