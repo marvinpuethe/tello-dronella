@@ -47,6 +47,11 @@ class Tello:
         self.keepalive_thread.daemon = True
         self.keepalive_thread.start()
 
+    def __del__(self):
+        print('Waiting for threads to terminate...')
+        self.keepalive_thread.join(self.KEEPALIVE_INTERVAL)
+
+
     @property
     def __tello_address__(self):
         return self.tello_address
@@ -95,7 +100,9 @@ class Tello:
             response = self.send_command('command')
             counter += 1
 
-        self.tello_sn = self.send_command('sn?').returnvalue
+        if counter < self.MAX_INITIALIZATION_ITERATIONS:
+            self.state.is_connected = True
+            self.tello_sn = self.send_command('sn?').returnvalue
 
     def send_command(self, command):
         '''
@@ -126,12 +133,7 @@ class Tello:
             # If the maximum timeout is reached try to land the drone
             if diff > self.MAX_TIME_OUT:
                 print('❗ Max timeout exceeded ❗\nCommand %s' % command)
-
-                # Land drone to avoid damage
-                self.socket.sendto('land'.encode(
-                    'utf-8'), self.tello_address)
-                print('Trying to land drone\nBe careful!')
-                return Response('b\'command not sent')
+                return Response('b\'error command not sent')
 
         if self.log[-1].response.success:
             print('Succeeded command %s to %s ✔' % (command, self.tello_ip))
@@ -145,8 +147,7 @@ class Tello:
         Stops the keepalive connection and waits for the termination of the thread 
         '''
         self.send_keepalives = False
-        print('Waiting for threads to terminate...')
-        self.keepalive_thread.join(self.KEEPALIVE_INTERVAL)
+        self.state.is_connected = False
 
     def enable_missionpads(self):
         '''

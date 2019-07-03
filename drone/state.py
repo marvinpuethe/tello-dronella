@@ -39,6 +39,9 @@ class State:
         self.barometer = None
         self.motor_time = None
 
+        # Connection information
+        self.is_connected = False
+
         self.local_ip = ''
         self.local_port = 0
 
@@ -142,6 +145,10 @@ class State:
     @property
     def __motor_time__(self):
         return self.motor_time
+
+    @property
+    def __is_connected__(self):
+        return self.is_connected
 
     def _state_thread(self):
         '''

@@ -11,9 +11,11 @@ class Operator:
         self.path_to_log = 'log'
         self.start_time = datetime.now().isoformat().replace(':', '-')
 
+        self.MAX_COMMAND_RETRIES = 3
+
     def __del__(self):
-        self.end_connection
-        self.save_log
+        self.end_connection()
+        self.save_log()
 
     def add_drone(self, tello):
         '''
@@ -27,8 +29,21 @@ class Operator:
         '''
         for tello in self.swarm:
             # TODO Execute command as thread
-            if not tello.send_command(command).success():
+
+            # Skip execution if tello is disconnected
+            if not tello.state.is_connected:
+                # TODO Try to reconnect the drone
+                continue
+
+            # Execute command and retry MAX_COMMAND_RETRIES times
+            counter = 0
+            while not tello.send_command(command).success() and counter < self.MAX_COMMAND_RETRIES:
+                counter += 1
+
+            # If the execution fails try to land drone and change state
+            if counter == self.MAX_COMMAND_RETRIES:
                 tello.send_command('land')
+                tello.state.is_connected = False
 
     def register_drone(self, ip, wifi='operator', ap='dronella'):
         '''
@@ -51,6 +66,8 @@ class Operator:
         '''
         for tello in self.swarm:
             tello.close_connection()
+            del tello
+            self.swarm.remove(tello)
 
     def save_log(self):
         '''
