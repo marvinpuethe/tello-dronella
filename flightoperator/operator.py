@@ -75,7 +75,6 @@ class Operator:
         for tello in self.swarm:
             tello.close_connection()
             del tello
-            self.swarm.remove(tello)
 
     def save_log(self):
         '''
