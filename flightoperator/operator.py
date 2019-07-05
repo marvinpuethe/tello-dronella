@@ -15,7 +15,7 @@ class Operator:
         self.MAX_COMMAND_RETRIES = 3
 
     def __del__(self):
-        self.end_connection()
+        self.close()
         self.save_log()
 
     def add_drone(self, tello):
@@ -89,9 +89,8 @@ class Operator:
         Send the land command to all drones
         '''
         self.execute_command('land')
-        self.end_connection()
 
-    def end_connection(self):
+    def close(self):
         '''
         End the socket connection of each drone
         '''
