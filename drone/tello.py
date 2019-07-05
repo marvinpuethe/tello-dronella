@@ -48,6 +48,7 @@ class Tello:
         self.keepalive_thread.start()
 
     def __del__(self):
+        socket.close()
         print('⏲  Waiting for thread ' + self.tello_sn + ' to terminate...')
         self.keepalive_thread.join(self.KEEPALIVE_INTERVAL)
 
