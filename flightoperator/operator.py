@@ -29,6 +29,13 @@ class Operator:
         else:
             print('❌  Failed to add drone ' + tello.tello_ip)
 
+    def remove_drone(self, tello):
+        '''
+        Remove the given drone to the swarm
+        '''
+        self.swarm.remove(tello)
+        print('✅  Removed drone ' + tello.tello_ip)
+
     def execute_command(self, command):
         '''
         Execute the command on each drone
@@ -63,7 +70,7 @@ class Operator:
         if counter == self.MAX_COMMAND_RETRIES:
             print('❌  Execution failed. Landing ' + tello.tello_sn)
             tello.send_command('land')
-            tello.state.is_connected = False
+            self.remove_drone(tello)
 
     def register_drone(self, ip, wifi='operator', ap='dronella'):
         '''
