@@ -78,7 +78,7 @@ class Operator:
         '''
         tello = Tello(ip)
         while not tello.send_command('ap ' + wifi + ' ' + ap).success():
-            input('Drone not found. Press enter to retry')
+            print('Drone not found. Retrying...')
         print('✅  Registered drone ' + tello.tello_sn + ' to ' + wifi)
 
     def scan_for_drones(self):
