@@ -7,7 +7,7 @@ from drone.response import Response
 
 
 class Tello:
-    def __init__(self, tello_ip='192.168.10.1', send_keepalives=True):
+    def __init__(self, tello_ip='192.168.10.1', send_keepalives=True, debug=False):
 
         # Server information
         self.local_ip = ''
@@ -30,8 +30,9 @@ class Tello:
         # Drone state
         self.state = State()
 
-        # Log storage
+        # Debug and log
         self.log = []
+        self.debug = debug
 
         # Maximum time to wait for an acknowledgement. Otherwise abort the flight.
         self.MAX_TIME_OUT = 10.0
@@ -112,7 +113,8 @@ class Tello:
 
         # If we try to receive the serial number return the stored value if it exists
         if command == 'sn?' and self.tello_sn != None:
-            print('✅ Serial Number: ' + self.tello_sn)
+            if self.debug:
+                print('✅ Serial Number: ' + self.tello_sn)
             return Response('b\'' + self.tello_sn)
 
         # Stores the current command and an id in the log
@@ -121,8 +123,9 @@ class Tello:
         # Send command as utf-8 to the specified tello address
         self.socket.sendto(command.encode(
             'utf-8'), self.tello_address)
-        print('📶  Sending command: ' + str(command) +
-              ' to  ' + str(self.tello_ip))
+        if self.debug:
+            print('📶  Sending command: ' + str(command) +
+                  ' to  ' + str(self.tello_ip))
 
         # Start timer and wait for response
         start = time.time()
@@ -132,16 +135,17 @@ class Tello:
 
             # If the maximum timeout is reached try to land the drone
             if diff > self.MAX_TIME_OUT:
-                print('❌  Max timeout exceeded for command ' +
-                      command + ' for ' + self.tello_ip)
+                if self.debug:
+                    print('❌  Max timeout exceeded for command ' +
+                          command + ' for ' + self.tello_ip)
                 return Response('b\'error timeout')
 
         if self.log[-1].response.success:
             print('✅  Succeeded command ' + command +
-                  ' for ' + self.tello_ip + '\n')
+                  ' for ' + self.tello_ip)
         else:
             print('❌  Failed command ' + command +
-                  ' for ' + self.tello_ip + '\n')
+                  ' for ' + self.tello_ip)
 
         return self.log[-1].response
 
@@ -195,5 +199,6 @@ class Tello:
             if (self.response.returnvalue == self.tello_sn):
                 continue
 
-            print('Response from ' + ip[0] + ': ' + str(self.response))
+            if self.debug:
+                print('Response from ' + ip[0] + ': ' + str(self.response))
             self.log[-1].add_response(self.response)
