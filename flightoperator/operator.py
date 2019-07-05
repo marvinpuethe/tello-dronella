@@ -1,6 +1,7 @@
 from drone.tello import Tello
 import os
 from datetime import datetime
+import socket
 
 
 class Operator:
@@ -60,6 +61,28 @@ class Operator:
         if tello.send_command('ap ' + wifi + ' ' + ap).success():
             self.add_drone(tello)
         print('✅  Registered drone ' + tello.tello_sn + ' to ' + wifi)
+
+    def scan_for_drones(self):
+        ips = []
+
+        ip_address = socket.gethostbyname(socket.gethostname())
+
+        network_prefix = ''
+        for segment in ip_address.split('.')[0:3]:
+            network_prefix += segment
+            network_prefix += '.'
+
+        for i in range(252, 253):
+            ping_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            ping_socket.settimeout(1)
+
+            address = network_prefix + str(i)
+            if ping_socket.connect_ex((address, 9999)) == 0:
+                ips.append(address)
+
+            ping_socket.close()
+
+        return ips
 
     def land_swarm(self):
         '''
