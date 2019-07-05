@@ -33,34 +33,45 @@ class Operator:
         '''
         Execute the command on each drone
         '''
+        # Execute commands as thread for each drone
+        threads = []
         for tello in self.swarm:
-            # TODO Execute command as thread
+            thread = threading.Thread(target=self._send_command_to_drone,
+                                      args=(tello, command))
+            thread.start()
+            threads.append(thread)
 
-            # Skip execution if tello is disconnected
-            if not tello.state.is_connected:
-                # TODO Try to reconnect the drone
-                print('❌  Tello ' + tello.tello_ip +
-                      ' is disconnected. Command not sent')
-                continue
+        # Wait for drones to finish execution
+        for thread in threads:
+            thread.join()
 
-            # Execute command and retry MAX_COMMAND_RETRIES times
-            counter = 0
-            while not tello.send_command(command).success() and counter < self.MAX_COMMAND_RETRIES:
-                counter += 1
+    def _send_command_to_drone(self, tello, command):
 
-            # If the execution fails try to land drone and change state
-            if counter == self.MAX_COMMAND_RETRIES:
-                print('❌  Execution failed. Landing ' + tello.tello_sn)
-                tello.send_command('land')
-                tello.state.is_connected = False
+        # Skip execution if tello is disconnected
+        if not tello.state.is_connected:
+            # TODO Try to reconnect the drone
+            print('❌  Tello ' + tello.tello_ip +
+                  ' is disconnected. Command not sent')
+            return
+
+        # Execute command and retry MAX_COMMAND_RETRIES times
+        counter = 0
+        while not tello.send_command(command).success() and counter < self.MAX_COMMAND_RETRIES:
+            counter += 1
+
+        # If the execution fails try to land drone and change state
+        if counter == self.MAX_COMMAND_RETRIES:
+            print('❌  Execution failed. Landing ' + tello.tello_sn)
+            tello.send_command('land')
+            tello.state.is_connected = False
 
     def register_drone(self, ip, wifi='operator', ap='dronella'):
         '''
         Register drone with the given op to the given access point
         '''
         tello = Tello(ip)
-        if tello.send_command('ap ' + wifi + ' ' + ap).success():
-            self.add_drone(tello)
+        while not tello.send_command('ap ' + wifi + ' ' + ap).success():
+            input('Drone not found. Press enter to retry')
         print('✅  Registered drone ' + tello.tello_sn + ' to ' + wifi)
 
     def scan_for_drones(self):
@@ -109,6 +120,7 @@ class Operator:
         '''
         End the socket connection of each drone
         '''
+        self.land_swarm()
         for tello in self.swarm:
             tello.close_connection()
             del tello
