@@ -2,6 +2,7 @@ from drone.tello import Tello
 import os
 from datetime import datetime
 import socket
+import threading
 
 
 class Operator:
@@ -63,7 +64,6 @@ class Operator:
         print('✅  Registered drone ' + tello.tello_sn + ' to ' + wifi)
 
     def scan_for_drones(self):
-        ips = []
 
         ip_address = socket.gethostbyname(socket.gethostname())
 
@@ -72,17 +72,32 @@ class Operator:
             network_prefix += segment
             network_prefix += '.'
 
-        for i in range(252, 253):
-            ping_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            ping_socket.settimeout(1)
+        # Start scan for all adresses in subnet 255.255.255.0
+        threads = []
+        for i in range(2, 254):
+            address = (network_prefix + str(i), 9999)
+            thread = threading.Thread(
+                target=self._is_drone_available, args=(address,), daemon=True)
+            thread.start()
+            threads.append(thread)
 
-            address = network_prefix + str(i)
-            if ping_socket.connect_ex((address, 9999)) == 0:
-                ips.append(address)
+        # Wait for all threads to terminate
+        for thread in threads:
+            thread.join()
 
-            ping_socket.close()
+    def _is_drone_available(self, address):
 
-        return ips
+        # Create socket
+        ping_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        ping_socket.settimeout(5)
+
+        # Test if abyss server of drone is available
+        if ping_socket.connect_ex(address) == 0:
+            self.swarm.append(Tello(address[0]))
+            print('Drone ' + address[0] + ' is available')
+
+        # Close connection
+        ping_socket.close()
 
     def land_swarm(self):
         '''
