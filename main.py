@@ -22,77 +22,47 @@ def execute_commands_from_file(command_file_name):
                 operator.execute_command(command)
 
 
-def get_swarm_file():
-    '''
-    Get the swarm file either from the argument list or as the standard file. If not file is found return None
-    '''
-    # Try to get the swarm file from argument list
-    try:
-        swarm_file = sys.argv[1]
-    # If not try standard file
-    except IndexError:
-        swarm_file = 'swarm.txt'
-
-    # If no parameter was given try standard file
-    return swarm_file
-
-
-def get_command_file():
-    '''
-    Get the command file either from the argument list or as the standard file. If not file is found return None
-    '''
-    # Try to get the command file from argument list
-    try:
-        command_file = sys.argv[2]
-    # If no parameter was given try standard file
-    except IndexError:
-        command_file = 'command.txt'
-    return command_file
-
-
-def get_swarm_ips_from_keyboard():
-
-    swarm_ips = []
-
-    tello_ip = ''
-    while (tello_ip != 'end'):
-        tello_ip = input(
-            'Swarm file not found. Specify drone ips (empty for single mode)\nExit input with \'end\'\n')
-
-        if tello_ip == 'end':
-            break
-
-        if (tello_ip == '' and operator.swarm == None):
-            swarm_ips.append('192.168.10.1')
-            break
-
-        swarm_ips.append(tello_ip)
-
-    return swarm_ips
-
-
 operator = Operator()
 
-# Get drone ip adresses
-swarm_file_name = get_swarm_file()
-if (swarm_file_name == None):
-    swarm_ips = get_swarm_ips_from_keyboard()
+# Check if in single or multiflight mode
+in_string = input(
+    'Welcome! 👋\nWould you like to connect to multiple drones? (Y/n)\n')
+if (in_string in ('y', 'Y', 'yes', '')):
+    connect_to_multiple_drones = True
 else:
-    f = open(swarm_file_name, 'r')
-    ips = f.readlines()
+    connect_to_multiple_drones = False
 
-    swarm_ips = []
-    for ip in ips:
-        swarm_ips.append(ip.rstrip())
+# Check if drones need to be registered
+if (connect_to_multiple_drones):
+    in_string = input('Are your drones already registered? (Y/n)\n')
+    if (in_string not in ('y', 'Y', 'yes', '')):
+        wifi = input('Which WiFi SSID should be used? (Empty for operator) ')
+        if (wifi != ''):
+            password = input(
+                'Which WiFi password should be used? ')
+        while (input('Connect to your drone wifi and press Enter (End with \'end\')') != 'end'):
+            if wifi == '':
+                operator.register_drone('192.168.10.1')
+            else:
+                operator.register_drone('192.168.10.1', wifi, password)
+        input('Connect to the management wifi now and press Enter')
 
-# Add drones to swarm
-for drone_ip in swarm_ips:
-    operator.add_drone(Tello(drone_ip))
+# Scan for drones on local network
+while (operator.swarm == []):
+    operator.scan_for_drones()
 
-# Check for command file and execute if found
-command_file_name = get_command_file()
-if os.path.isfile(command_file_name):
-    execute_commands_from_file(command_file_name)
+# Try to get the command file from argument list
+command_file = 'command.txt'
+try:
+    command_file = sys.argv[2]
+# If no parameter was given try standard file
+except IndexError:
+    print('No command file given by startupt. Trying command.txt')
+
+# Check if command file has been found
+if os.path.isfile(command_file):
+    print('command.txt found. Executing...')
+    execute_commands_from_file(command_file)
 
 # If no command file has been given start in interactive mode
 else:
@@ -104,17 +74,12 @@ else:
             command = input()
 
         except KeyboardInterrupt:
-            operator.land_swarm()
             break
 
-        if not command:
-            break
-
-        if 'end' in command:
-            operator.land_swarm()
+        if not command or 'end' in command:
             break
 
         # Send command to tello drone. If return is None end communication
         operator.execute_command(command)
 
-del operator
+operator.save_log()
