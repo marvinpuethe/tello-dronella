@@ -3,7 +3,7 @@
 Tello Dronella is a set of python scripts to fly and manage swarms of the Tello Edu drone.  
 :construction: This project is in early stage so feel free to help get it ready.
 
-# How to fly a single drone :arrow_upper_right: 
+# How to fly a drone :arrow_upper_right: 
 
 1. Clone the repository with `git clone https://github.com/marvinpuethe/tello-dronella`
 1. Run setup.py
