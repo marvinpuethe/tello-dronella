@@ -33,12 +33,13 @@ class Operator:
         '''
         Remove the given drone to the swarm
         '''
+        tello.close_connection()
         self.swarm.remove(tello)
         print('✅  Removed drone ' + tello.tello_ip)
 
     def execute_command(self, command):
         '''
-        Execute the command on each drone
+        Execute the command on each drone in parallel. The execution is started in threads for each drone. The script is blocked until all drones executed the command or are removed from the swarm.
         '''
         # Execute commands as thread for each drone
         threads = []
@@ -53,12 +54,14 @@ class Operator:
             thread.join()
 
     def _send_command_to_drone(self, tello, command):
-
+        '''
+        Sends command to the given drone. If drone is disconnected execution is skipped. Tries to execute self.MAX_COMMAND_RETRIES times. If no response is received the drone is removed from the swarm.
+        '''
         # Skip execution if tello is disconnected
         if not tello.state.is_connected:
-            # TODO Try to reconnect the drone
             print('❌  Tello ' + tello.tello_ip +
                   ' is disconnected. Command not sent')
+            self.remove_drone(tello)
             return
 
         # Execute command and retry MAX_COMMAND_RETRIES times
@@ -72,16 +75,19 @@ class Operator:
             tello.send_command('land')
             self.remove_drone(tello)
 
-    def register_drone(self, ip, wifi='operator', ap='dronella'):
+    def register_drone(self, ip, wifi='operator', password='dronella'):
         '''
-        Register drone with the given op to the given access point
+        Register drone with the given ssid and password to the given access point.
         '''
         tello = Tello(ip)
-        while not tello.send_command('ap ' + wifi + ' ' + ap).success():
+        while not tello.send_command('ap ' + wifi + ' ' + password).success():
             print('Drone not found. Retrying...')
         print('✅  Registered drone ' + tello.tello_sn + ' to ' + wifi)
 
     def scan_for_drones(self):
+        '''
+        Get the current ip network and check each ip address if its a drone. Started with 253 separate threads to speed up the process. Checks if abyss server on port 9999 is available.
+        '''
 
         ip_address = socket.gethostbyname(socket.gethostname())
 
@@ -95,7 +101,7 @@ class Operator:
         for i in range(2, 254):
             address = (network_prefix + str(i), 9999)
             thread = threading.Thread(
-                target=self._is_drone_available, args=(address,), daemon=True)
+                target=self._try_add_drone, args=(address,), daemon=True)
             thread.start()
             threads.append(thread)
 
@@ -103,16 +109,18 @@ class Operator:
         for thread in threads:
             thread.join()
 
-    def _is_drone_available(self, address):
+    def _try_add_drone(self, address):
+        '''
+        Check if ip address is a tello drone by establishing a connection to the abyss server on port 99999. If it is available add it to the swarm.
+        '''
 
         # Create socket
         ping_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        ping_socket.settimeout(5)
+        ping_socket.settimeout(1)
 
         # Test if abyss server of drone is available
         if ping_socket.connect_ex(address) == 0:
             self.swarm.append(Tello(address[0]))
-            print('Drone ' + address[0] + ' is available')
 
         # Close connection
         ping_socket.close()
@@ -125,7 +133,7 @@ class Operator:
 
     def close(self):
         '''
-        End the socket connection of each drone
+        End the socket connection to each drone
         '''
         self.land_swarm()
         for tello in self.swarm:
@@ -134,7 +142,7 @@ class Operator:
 
     def save_log(self):
         '''
-        Print the log for each drone to the stdout
+        Print the log for each drone to the stdout and save it to the log path
         '''
         if not os.path.isdir(self.path_to_log):
             os.mkdir(self.path_to_log)
