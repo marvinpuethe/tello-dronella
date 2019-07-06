@@ -39,9 +39,12 @@ class State:
         self.barometer = None
         self.motor_time = None
 
-        self.local_ip = ''
+        # Connection information
+        self.is_connected = False
 
-        self.local_port = 8890
+        self.local_ip = ''
+        self.local_port = 0
+
         self.socket = socket.socket(
             socket.AF_INET, socket.SOCK_DGRAM)  # socket for receiving state
         self.socket.bind((self.local_ip, self.local_port))
@@ -143,6 +146,10 @@ class State:
     def __motor_time__(self):
         return self.motor_time
 
+    @property
+    def __is_connected__(self):
+        return self.is_connected
+
     def _state_thread(self):
         '''
         Listen to the state of the Tello.
@@ -154,7 +161,7 @@ class State:
                 response = self.socket.recvfrom(1024)
 
             except socket.error as exc:
-                print('⚠ Caught exception socket.error : %s' % exc)
+                print('❗ Caught exception socket.error: ' + exc)
 
             statelist = str(response).split(';')
 

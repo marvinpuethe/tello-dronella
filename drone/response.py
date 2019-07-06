@@ -6,7 +6,7 @@ class Response:
             self.returnvalue = None
         else:
             self.returncode = str(response)[0:1]
-            self.returnvalue = str(response).split('\'')[1][:-4]
+            self.returnvalue = str(response).split('\'')[1]
 
     @property
     def __returncode__(self):
